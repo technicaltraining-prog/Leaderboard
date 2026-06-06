@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team 26 — Leaderboard Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== CSS VARIABLES & THEME ===== */
+    :root {
+      --bg-primary: #f4f0ff;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-glass: rgba(255,255,255,0.6);
+      --bg-glass-dark: rgba(255,255,255,0.08);
+      --text-primary: #1a1033;
+      --text-secondary: #5a5070;
+      --text-muted: #9b91b8;
+      --border: rgba(120,90,220,0.15);
+      --border-hover: rgba(120,90,220,0.35);
+      --accent-1: #7b4fff;
+      --accent-2: #ff5cad;
+      --accent-3: #00d4aa;
+      --accent-4: #ff8c42;
+      --gold: #f5c518;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+      --danger: #ff4d6d;
+      --success: #00c49a;
+      --warning: #ffaa00;
+      --shadow: 0 4px 32px rgba(123,79,255,0.10);
+      --shadow-hover: 0 8px 40px rgba(123,79,255,0.18);
+      --radius: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --grad-hero: linear-gradient(135deg, #7b4fff 0%, #ff5cad 100%);
+      --grad-gold: linear-gradient(135deg, #f7e06a 0%, #f5c518 100%);
+      --grad-silver: linear-gradient(135deg, #e8e8e8 0%, #b0b0b0 100%);
+      --grad-bronze: linear-gradient(135deg, #e8a06a 0%, #cd7f32 100%);
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="dark"] {
+      --bg-primary: #0d0a1a;
+      --bg-secondary: #14102b;
+      --bg-card: #1c1736;
+      --bg-glass: rgba(28,23,54,0.85);
+      --text-primary: #f0ecff;
+      --text-secondary: #a89ec8;
+      --text-muted: #635980;
+      --border: rgba(120,90,220,0.20);
+      --border-hover: rgba(120,90,220,0.45);
+      --shadow: 0 4px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 8px 40px rgba(123,79,255,0.25);
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--accent-1); border-radius: 3px; }
+
+    /* ===== TOP NAV ===== */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 64px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 16px rgba(123,79,255,0.07);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-head);
+      font-weight: 800; font-size: 1.2rem;
+      color: var(--text-primary);
+    }
+    .nav-brand .badge {
+      background: var(--grad-hero);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .btn-icon:hover { background: var(--accent-1); color: #fff; border-color: var(--accent-1); transform: scale(1.07); }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      background: var(--grad-hero);
+      padding: 2.5rem 2rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+    .hero-title { font-family: var(--font-head); font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; color: #fff; line-height: 1.1; }
+    .hero-title span { opacity: 0.7; display: block; font-size: 0.45em; font-weight: 400; margin-bottom: 0.3em; letter-spacing: 0.15em; text-transform: uppercase; }
+    .hero-sub { color: rgba(255,255,255,0.75); margin-top: 0.6rem; font-size: 1rem; max-width: 500px; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.4rem; }
+    .hero-tag {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff; padding: 4px 14px;
+      border-radius: 20px; font-size: 0.78rem; font-weight: 500;
+      backdrop-filter: blur(6px);
+    }
+
+    /* ===== LAYOUT ===== */
+    .main-wrap { max-width: 1140px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* ===== SECTION HEADERS ===== */
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+    .section-title {
+      font-family: var(--font-head); font-size: 1.15rem; font-weight: 700;
+      color: var(--text-primary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::before {
+      content: ''; width: 4px; height: 18px;
+      background: var(--grad-hero);
+      border-radius: 2px;
+    }
+
+    /* ===== STAT CARDS ===== */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.4rem 1.6rem;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: default;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: var(--border-hover); }
+    .stat-card::after {
+      content: ''; position: absolute;
+      top: -20px; right: -20px;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      opacity: 0.08;
+    }
+    .stat-card:nth-child(1)::after { background: var(--accent-1); }
+    .stat-card:nth-child(2)::after { background: var(--gold); }
+    .stat-card:nth-child(3)::after { background: var(--accent-3); }
+    .stat-card:nth-child(4)::after { background: var(--accent-2); }
+    .stat-icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-family: var(--font-head); font-size: 2rem; font-weight: 800; color: var(--text-primary); line-height: 1; margin-top: 0.3rem; }
+    .stat-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+    /* ===== GRID LAYOUT ===== */
+    .content-grid { display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    @media(max-width:900px){ .content-grid { grid-template-columns: 1fr; } }
+
+    /* ===== FORM CARD ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.6rem;
+      box-shadow: var(--shadow);
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--text-secondary); margin-bottom: 5px;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .form-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg-primary);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: var(--font-body); font-size: 0.95rem;
+      transition: var(--transition);
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--accent-1); box-shadow: 0 0 0 3px rgba(123,79,255,0.12); }
+    .form-input.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255,77,109,0.12); }
+    .field-error { color: var(--danger); font-size: 0.78rem; margin-top: 4px; display: none; }
+    .field-error.show { display: block; }
+    .btn {
+      padding: 10px 20px; border-radius: var(--radius);
+      font-family: var(--font-body); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: var(--transition); display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--grad-hero); color: #fff;
+      box-shadow: 0 4px 16px rgba(123,79,255,0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 24px rgba(123,79,255,0.45); transform: translateY(-1px); }
+    .btn-danger { background: var(--danger); color: #fff; padding: 6px 14px; font-size: 0.82rem; }
+    .btn-danger:hover { background: #e0002a; }
+    .btn-secondary {
+      background: var(--bg-primary); color: var(--text-primary);
+      border: 1.5px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--border-hover); }
+    .btn-success { background: var(--success); color: #fff; padding: 6px 14px; font-size: 0.82rem; }
+    .btn-export {
+      background: var(--accent-3); color: var(--bg-primary);
+      padding: 8px 18px; font-size: 0.85rem;
+    }
+    .btn-export:hover { filter: brightness(0.92); }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ===== SEARCH BAR ===== */
+    .search-wrap { position: relative; margin-bottom: 1rem; }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1rem; pointer-events: none; }
+    .search-input { padding-left: 38px !important; }
+
+    /* ===== TABLE ===== */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    thead th {
+      background: var(--bg-primary);
+      color: var(--text-muted);
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 10px 14px; text-align: left;
+    }
+    thead th:first-child { border-radius: var(--radius) 0 0 0; }
+    thead th:last-child { border-radius: 0 var(--radius) 0 0; }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: rgba(123,79,255,0.04); }
+    tbody tr:last-child { border-bottom: none; }
+    td { padding: 12px 14px; vertical-align: middle; }
+    .rank-badge {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-head); font-weight: 800; font-size: 0.85rem;
+    }
+    .rank-1 { background: var(--grad-gold); color: #5a3a00; box-shadow: 0 2px 8px rgba(245,197,24,0.4); }
+    .rank-2 { background: var(--grad-silver); color: #3a3a3a; }
+    .rank-3 { background: var(--grad-bronze); color: #fff; }
+    .rank-other { background: var(--bg-primary); color: var(--text-secondary); border: 1px solid var(--border); }
+    tbody tr.top-1 td:first-child { border-left: 3px solid var(--gold); }
+    tbody tr.top-2 td:first-child { border-left: 3px solid var(--silver); }
+    tbody tr.top-3 td:first-child { border-left: 3px solid var(--bronze); }
+    .name-cell { font-weight: 600; }
+    .score-chip {
+      display: inline-flex; align-items: center;
+      background: rgba(123,79,255,0.1);
+      color: var(--accent-1);
+      padding: 3px 10px; border-radius: 20px;
+      font-weight: 700; font-size: 0.9rem;
+    }
+    .action-btns { display: flex; gap: 6px; }
+    .empty-state {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--text-muted); font-size: 0.9rem;
+    }
+    .empty-state .big { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    /* ===== PODIUM ===== */
+    .podium-wrap {
+      display: flex; justify-content: center; align-items: flex-end;
+      gap: 1rem; padding: 1.5rem 0 0;
+    }
+    .podium-card {
+      flex: 1; max-width: 180px;
+      border-radius: var(--radius-lg);
+      padding: 1.2rem 1rem;
+      text-align: center; position: relative;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    .podium-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+    .podium-card.p1 { background: linear-gradient(160deg, #fffae0, #fff8c0); border-color: var(--gold); order: 2; }
+    [data-theme="dark"] .podium-card.p1 { background: linear-gradient(160deg, #2a2210, #1e1800); }
+    .podium-card.p2 { background: linear-gradient(160deg, #f0f0f0, #e0e0e0); border-color: var(--silver); order: 1; }
+    [data-theme="dark"] .podium-card.p2 { background: linear-gradient(160deg, #1c1c1c, #141414); }
+    .podium-card.p3 { background: linear-gradient(160deg, #f5e8d0, #eadbb0); border-color: var(--bronze); order: 3; }
+    [data-theme="dark"] .podium-card.p3 { background: linear-gradient(160deg, #1e1505, #140e00); }
+    .podium-medal { font-size: 2rem; margin-bottom: 0.5rem; }
+    .podium-rank {
+      font-family: var(--font-head); font-size: 0.7rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 0.4rem;
+    }
+    .podium-name { font-family: var(--font-head); font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; word-break: break-word; }
+    .podium-score { font-size: 1.5rem; font-weight: 800; font-family: var(--font-head); }
+    .podium-card.p1 .podium-score { color: #b8860b; }
+    .podium-card.p2 .podium-score { color: #606060; }
+    .podium-card.p3 .podium-score { color: #8b4513; }
+    .podium-platform {
+      position: absolute; bottom: -1px; left: 0; right: 0;
+      height: 6px; border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+    .p1 .podium-platform { background: var(--gold); }
+    .p2 .podium-platform { background: var(--silver); }
+    .p3 .podium-platform { background: var(--bronze); }
+    .podium-empty { color: var(--text-muted); font-size: 0.85rem; padding-top: 1rem; text-align: center; }
+
+    /* ===== PERFORMANCE REPORT ===== */
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .report-card {
+      border-radius: var(--radius-lg);
+      padding: 1.4rem;
+      border: 1px solid var(--border);
+    }
+    .report-card.top { background: linear-gradient(135deg, rgba(0,196,154,0.08), rgba(0,196,154,0.02)); border-color: rgba(0,196,154,0.3); }
+    .report-card.mid { background: linear-gradient(135deg, rgba(255,170,0,0.08), rgba(255,170,0,0.02)); border-color: rgba(255,170,0,0.3); }
+    .report-card.low { background: linear-gradient(135deg, rgba(255,77,109,0.08), rgba(255,77,109,0.02)); border-color: rgba(255,77,109,0.3); }
+    .report-title {
+      font-family: var(--font-head); font-size: 0.9rem; font-weight: 700;
+      display: flex; align-items: center; gap: 7px; margin-bottom: 1rem;
+    }
+    .report-card.top .report-title { color: var(--success); }
+    .report-card.mid .report-title { color: var(--warning); }
+    .report-card.low .report-title { color: var(--danger); }
+    .report-list { list-style: none; }
+    .report-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px dashed var(--border);
+      font-size: 0.88rem;
+    }
+    .report-item:last-child { border-bottom: none; }
+    .report-item-name { font-weight: 600; color: var(--text-primary); }
+    .report-item-score { font-weight: 700; }
+    .report-card.top .report-item-score { color: var(--success); }
+    .report-card.mid .report-item-score { color: var(--warning); }
+    .report-card.low .report-item-score { color: var(--danger); }
+    .report-empty { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* ===== STATS FULL ===== */
+    .stats-bar-wrap { margin-top: 0.8rem; }
+    .stats-bar-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+    .stats-bar { height: 7px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; }
+    .stats-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+    /* ===== TOAST ===== */
+    .toast-wrap { position: fixed; top: 80px; right: 1.5rem; z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      font-size: 0.88rem; font-weight: 500;
+      box-shadow: var(--shadow);
+      display: flex; align-items: center; gap: 10px;
+      animation: toastIn 0.25s ease forwards;
+      max-width: 300px; pointer-events: all;
+    }
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.error { border-left: 3px solid var(--danger); }
+    .toast.info { border-left: 3px solid var(--accent-1); }
+    @keyframes toastIn { from { opacity:0; transform: translateX(30px); } to { opacity:1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity:1; } to { opacity:0; transform: translateX(30px); } }
+
+    /* ===== MODAL (EDIT) ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 2rem; width: 90%; max-width: 420px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+      transform: scale(0.95); transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+    .modal-title { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; margin-bottom: 1.2rem; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 1.4rem; }
+
+    /* ===== TABS ===== */
+    .tab-bar { display: flex; gap: 4px; background: var(--bg-primary); padding: 4px; border-radius: var(--radius); margin-bottom: 1.5rem; }
+    .tab-btn {
+      flex: 1; padding: 8px 14px; border: none; background: transparent;
+      color: var(--text-muted); font-family: var(--font-body); font-size: 0.85rem;
+      font-weight: 600; border-radius: calc(var(--radius) - 2px);
+      cursor: pointer; transition: var(--transition);
+    }
+    .tab-btn.active { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ===== MISC ===== */
+    .section-gap { margin-bottom: 2rem; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+    .chip {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .chip-top { background: rgba(0,196,154,0.12); color: var(--success); }
+    .chip-mid { background: rgba(255,170,0,0.12); color: var(--warning); }
+    .chip-low { background: rgba(255,77,109,0.12); color: var(--danger); }
+
+    @media(max-width:600px){
+      .topnav { padding: 0 1rem; }
+      .hero { padding: 1.8rem 1rem 2rem; }
+      .main-wrap { padding: 1.2rem 1rem 3rem; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .podium-wrap { gap: 0.5rem; }
+      .tab-btn { font-size: 0.78rem; padding: 7px 8px; }
+    }
+    @media(max-width:380px){
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== TOP NAV ===== -->
+<nav class="topnav" role="navigation" aria-label="Main navigation">
+  <div class="nav-brand">
+    🏆 Team 26 <span class="badge">Leaderboard</span>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-icon" onclick="exportCSV()" title="Export CSV" aria-label="Export as CSV">⬇️</button>
+    <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode" aria-label="Toggle theme">🌙</button>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero" role="banner">
+  <div class="hero-inner">
+    <div class="hero-title">
+      <span>Team 26 Presents</span>
+      Leaderboard Management System
+    </div>
+    <p class="hero-sub">Track scores, rank participants, and celebrate top performers in real-time.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">📊 Live Stats</span>
+      <span class="hero-tag">🔍 Smart Search</span>
+      <span class="hero-tag">💾 Auto-save</span>
+      <span class="hero-tag">🏅 Podium View</span>
+      <span class="hero-tag">📤 CSV Export</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="main-wrap" role="main">
+
+  <!-- STAT CARDS -->
+  <section class="stat-grid section-gap" aria-label="Summary statistics">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-label">Total Participants</div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-sub">Registered entries</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-label">Highest Score</div>
+      <div class="stat-value" id="statHigh">—</div>
+      <div class="stat-sub" id="statHighName">No data yet</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-label">Average Score</div>
+      <div class="stat-value" id="statAvg">—</div>
+      <div class="stat-sub">Across all participants</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-label">Top Performer</div>
+      <div class="stat-value" id="statTopName" style="font-size:1.2rem;">—</div>
+      <div class="stat-sub" id="statTopScore">No data yet</div>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" onclick="switchTab('dashboard')" data-tab="dashboard" role="tab" aria-selected="true">📋 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('podium')" data-tab="podium" role="tab" aria-selected="false">🏅 Podium</button>
+    <button class="tab-btn" onclick="switchTab('report')" data-tab="report" role="tab" aria-selected="false">📊 Report</button>
+    <button class="tab-btn" onclick="switchTab('stats')" data-tab="stats" role="tab" aria-selected="false">📉 Stats</button>
+  </div>
+
+  <!-- TAB: DASHBOARD -->
+  <div class="tab-panel active" id="tab-dashboard">
+    <div class="content-grid">
+
+      <!-- ADD FORM -->
+      <section aria-label="Participant management">
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title">Add Participant</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputName">Participant Name</label>
+            <input type="text" id="inputName" class="form-input" placeholder="e.g. Alice Johnson" maxlength="50" autocomplete="off" />
+            <div class="field-error" id="errName">⚠ Name must be 2–50 characters.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputScore">Score</label>
+            <input type="number" id="inputScore" class="form-input" placeholder="e.g. 850" min="0" max="99999" />
+            <div class="field-error" id="errScore">⚠ Score must be between 0 and 99,999.</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="addParticipant()">➕ Add Entry</button>
+            <button class="btn btn-secondary" onclick="clearForm()">✖ Clear</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD TABLE -->
+      <section aria-label="Leaderboard table">
+        <div class="card" style="padding: 1.2rem 1rem;">
+          <div class="section-head">
+            <div class="section-title">Leaderboard</div>
+            <button class="btn btn-export" onclick="exportCSV()">⬇️ Export CSV</button>
+          </div>
+          <!-- SEARCH -->
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="form-input search-input" placeholder="Search by name…" oninput="renderTable()" autocomplete="off" />
+          </div>
+          <!-- TABLE -->
+          <div class="table-wrap">
+            <table aria-label="Participant rankings">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+                  <th>Tier</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr><td colspan="5"><div class="empty-state"><div class="big">📭</div>No participants yet.<br/>Add one using the form!</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /content-grid -->
+  </div><!-- /tab-dashboard -->
+
+  <!-- TAB: PODIUM -->
+  <div class="tab-panel" id="tab-podium">
+    <div class="card">
+      <div class="section-head">
+        <div class="section-title">🏅 Podium — Top 3</div>
+      </div>
+      <div class="podium-wrap" id="podiumWrap">
+        <div class="podium-empty">Add participants to see the podium!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: REPORT -->
+  <div class="tab-panel" id="tab-report">
+    <div class="card">
+      <div class="section-head">
+        <div class="section-title">📊 Performance Report</div>
+      </div>
+      <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:1.2rem;">
+        Participants are classified as <strong>Top</strong> (≥ avg+15%), <strong>Medium</strong> (within ±15% of avg), or <strong>Slow</strong> (&lt; avg−15%).
+      </p>
+      <div class="report-grid" id="reportGrid">
+        <div class="report-empty">No data yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: STATS -->
+  <div class="tab-panel" id="tab-stats">
+    <div class="card">
+      <div class="section-head">
+        <div class="section-title">📉 Detailed Statistics</div>
+      </div>
+      <div id="statsContent">
+        <div class="report-empty">No data yet. Add participants to see stats.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== EDIT MODAL ===== -->
+<div class="modal-overlay" id="editModal" role="dialog" aria-modal="true" aria-label="Edit participant">
+  <div class="modal">
+    <div class="modal-title">✏️ Edit Participant</div>
+    <input type="hidden" id="editId" />
+    <div class="form-group">
+      <label class="form-label" for="editName">Name</label>
+      <input type="text" id="editName" class="form-input" maxlength="50" />
+      <div class="field-error" id="errEditName">⚠ Name must be 2–50 characters.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="editScore">Score</label>
+      <input type="number" id="editScore" class="form-input" min="0" max="99999" />
+      <div class="field-error" id="errEditScore">⚠ Score must be between 0 and 99,999.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+  // =========================================================
+  // STATE
+  // =========================================================
+  let participants = [];
+  const STORAGE_KEY = 'team26_leaderboard_v2';
+  const THEME_KEY   = 'team26_theme';
+
+  // =========================================================
+  // INIT
+  // =========================================================
+  (function init() {
+    loadData();
+    applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+    renderAll();
+  })();
+
+  // =========================================================
+  // DATA PERSISTENCE
+  // =========================================================
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      participants = raw ? JSON.parse(raw) : [];
+    } catch(e) { participants = []; }
+  }
+
+  function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(participants));
+  }
+
+  function getSorted() {
+    return [...participants].sort((a, b) => b.score - a.score);
+  }
+
+  // =========================================================
+  // UNIQUE ID
+  // =========================================================
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  // =========================================================
+  // VALIDATION
+  // =========================================================
+  function validateName(val, errId, inputId) {
+    const v = val.trim();
+    const errEl = document.getElementById(errId);
+    const inEl  = document.getElementById(inputId);
+    if (v.length < 2 || v.length > 50) {
+      errEl.classList.add('show'); inEl.classList.add('error'); return false;
+    }
+    errEl.classList.remove('show'); inEl.classList.remove('error'); return true;
+  }
+
+  function validateScore(val, errId, inputId) {
+    const n = Number(val);
+    const errEl = document.getElementById(errId);
+    const inEl  = document.getElementById(inputId);
+    if (val === '' || isNaN(n) || n < 0 || n > 99999 || !Number.isInteger(n)) {
+      errEl.classList.add('show'); inEl.classList.add('error'); return false;
+    }
+    errEl.classList.remove('show'); inEl.classList.remove('error'); return true;
+  }
+
+  // =========================================================
+  // ADD PARTICIPANT
+  // =========================================================
+  function addParticipant() {
+    const name  = document.getElementById('inputName').value;
+    const score = document.getElementById('inputScore').value;
+    const vn = validateName(name, 'errName', 'inputName');
+    const vs = validateScore(score, 'errScore', 'inputScore');
+    if (!vn || !vs) return;
+
+    // Duplicate check
+    const dup = participants.find(p => p.name.trim().toLowerCase() === name.trim().toLowerCase());
+    if (dup) { showToast('⚠ A participant with that name already exists.', 'error'); return; }
+
+    participants.push({ id: uid(), name: name.trim(), score: parseInt(score), addedAt: Date.now() });
+    saveData();
+    renderAll();
+    clearForm();
+    showToast('✅ Participant added successfully!', 'success');
+  }
+
+  function clearForm() {
+    document.getElementById('inputName').value = '';
+    document.getElementById('inputScore').value = '';
+    ['inputName','inputScore'].forEach(id => document.getElementById(id).classList.remove('error'));
+    ['errName','errScore'].forEach(id => document.getElementById(id).classList.remove('show'));
+  }
+
+  // =========================================================
+  // DELETE PARTICIPANT
+  // =========================================================
+  function deleteParticipant(id) {
+    const p = participants.find(x => x.id === id);
+    if (!p) return;
+    if (!confirm(`Delete "${p.name}" from the leaderboard?`)) return;
+    participants = participants.filter(x => x.id !== id);
+    saveData();
+    renderAll();
+    showToast('🗑 Participant removed.', 'info');
+  }
+
+  // =========================================================
+  // EDIT MODAL
+  // =========================================================
+  function openEdit(id) {
+    const p = participants.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = p.name;
+    document.getElementById('editScore').value = p.score;
+    ['editName','editScore'].forEach(i => document.getElementById(i).classList.remove('error'));
+    ['errEditName','errEditScore'].forEach(i => document.getElementById(i).classList.remove('show'));
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('editModal').classList.remove('open');
+  }
+
+  function saveEdit() {
+    const id    = document.getElementById('editId').value;
+    const name  = document.getElementById('editName').value;
+    const score = document.getElementById('editScore').value;
+    const vn = validateName(name, 'errEditName', 'editName');
+    const vs = validateScore(score, 'errEditScore', 'editScore');
+    if (!vn || !vs) return;
+
+    const dup = participants.find(p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.id !== id);
+    if (dup) { showToast('⚠ Another participant already has that name.', 'error'); return; }
+
+    const p = participants.find(x => x.id === id);
+    if (!p) return;
+    p.name = name.trim();
+    p.score = parseInt(score);
+    saveData();
+    renderAll();
+    closeModal();
+    showToast('✏️ Participant updated!', 'success');
+  }
+
+  // Close modal on overlay click
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // =========================================================
+  // RENDER TABLE
+  // =========================================================
+  function renderTable() {
+    const query  = document.getElementById('searchInput').value.trim().toLowerCase();
+    const sorted = getSorted();
+    const tbody  = document.getElementById('tableBody');
+
+    const filtered = sorted.filter(p => p.name.toLowerCase().includes(query));
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="big">🔎</div>${query ? 'No results for "'+escHtml(query)+'".' : 'No participants yet.<br/>Add one using the form!'}</div></td></tr>`;
+      return;
+    }
+
+    const avg = calcAvg();
+
+    tbody.innerHTML = filtered.map((p, idx) => {
+      // Find true rank in full sorted list
+      const trueRank = sorted.findIndex(x => x.id === p.id) + 1;
+      const rankClass = trueRank <= 3 ? `rank-${trueRank}` : 'rank-other';
+      const rowClass  = trueRank <= 3 ? `top-${trueRank}` : '';
+      const medal     = trueRank === 1 ? '🥇' : trueRank === 2 ? '🥈' : trueRank === 3 ? '🥉' : '';
+      const tier      = getTier(p.score, avg);
+      return `
+        <tr class="${rowClass}">
+          <td><span class="rank-badge ${rankClass}">${medal || trueRank}</span></td>
+          <td class="name-cell">${escHtml(p.name)}</td>
+          <td><span class="score-chip">${p.score.toLocaleString()}</span></td>
+          <td><span class="chip chip-${tier.cls}">${tier.label}</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-success" onclick="openEdit('${p.id}')" aria-label="Edit ${escHtml(p.name)}">✏️</button>
+              <button class="btn btn-danger" onclick="deleteParticipant('${p.id}')" aria-label="Delete ${escHtml(p.name)}">🗑</button>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // =========================================================
+  // RENDER STAT CARDS
+  // =========================================================
+  function renderStats() {
+    const sorted = getSorted();
+    const n = sorted.length;
+    document.getElementById('statTotal').textContent = n;
+    if (n === 0) {
+      ['statHigh','statAvg','statTopName','statTopScore','statHighName'].forEach(id => {
+        document.getElementById(id).textContent = id === 'statTopName' ? '—' : id === 'statHighName' || id === 'statTopScore' ? 'No data yet' : '—';
+      });
+      return;
+    }
+    const top = sorted[0];
+    const avg = calcAvg();
+    document.getElementById('statHigh').textContent = top.score.toLocaleString();
+    document.getElementById('statHighName').textContent = top.name;
+    document.getElementById('statAvg').textContent = avg.toFixed(1);
+    document.getElementById('statTopName').textContent = top.name;
+    document.getElementById('statTopScore').textContent = `Score: ${top.score.toLocaleString()}`;
+  }
+
+  // =========================================================
+  // RENDER PODIUM
+  // =========================================================
+  function renderPodium() {
+    const sorted = getSorted();
+    const wrap   = document.getElementById('podiumWrap');
+    if (sorted.length === 0) {
+      wrap.innerHTML = '<div class="podium-empty">Add participants to see the podium!</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const classes = ['p1','p2','p3'];
+    const labels  = ['1st Place','2nd Place','3rd Place'];
+    let html = '';
+    for (let i = 0; i < 3; i++) {
+      const p = sorted[i];
+      if (!p) {
+        html += `<div class="podium-card ${classes[i]}"><div class="podium-medal">${medals[i]}</div><div class="podium-rank">${labels[i]}</div><div class="podium-name" style="color:var(--text-muted)">—</div><div class="podium-platform"></div></div>`;
+      } else {
+        html += `
+          <div class="podium-card ${classes[i]}">
+            <div class="podium-medal">${medals[i]}</div>
+            <div class="podium-rank">${labels[i]}</div>
+            <div class="podium-name">${escHtml(p.name)}</div>
+            <div class="podium-score">${p.score.toLocaleString()}</div>
+            <div class="podium-platform"></div>
+          </div>`;
+      }
+    }
+    wrap.innerHTML = html;
+  }
+
+  // =========================================================
+  // RENDER PERFORMANCE REPORT (Top / Medium / Slow)
+  // =========================================================
+  function renderReport() {
+    const sorted = getSorted();
+    const grid   = document.getElementById('reportGrid');
+    if (sorted.length === 0) {
+      grid.innerHTML = '<div class="report-empty">No participants yet.</div>';
+      return;
+    }
+    const avg = calcAvg();
+    const topThresh = avg * 1.15;
+    const lowThresh = avg * 0.85;
+
+    const toppers = sorted.filter(p => p.score >= topThresh);
+    const mediums = sorted.filter(p => p.score < topThresh && p.score > lowThresh);
+    const slows   = sorted.filter(p => p.score <= lowThresh);
+
+    function listItems(arr) {
+      if (arr.length === 0) return '<li class="report-item"><span class="report-empty">None in this category.</span></li>';
+      return arr.map(p => `
+        <li class="report-item">
+          <span class="report-item-name">${escHtml(p.name)}</span>
+          <span class="report-item-score">${p.score.toLocaleString()}</span>
+        </li>`).join('');
+    }
+
+    grid.innerHTML = `
+      <div class="report-card top">
+        <div class="report-title">🚀 Top Performers <span style="margin-left:auto;font-size:0.78rem;font-weight:400;color:var(--text-muted)">${toppers.length} participants</span></div>
+        <ul class="report-list">${listItems(toppers)}</ul>
+      </div>
+      <div class="report-card mid">
+        <div class="report-title">📊 Medium Performers <span style="margin-left:auto;font-size:0.78rem;font-weight:400;color:var(--text-muted)">${mediums.length} participants</span></div>
+        <ul class="report-list">${listItems(mediums)}</ul>
+      </div>
+      <div class="report-card low">
+        <div class="report-title">📉 Slow Performers <span style="margin-left:auto;font-size:0.78rem;font-weight:400;color:var(--text-muted)">${slows.length} participants</span></div>
+        <ul class="report-list">${listItems(slows)}</ul>
+      </div>`;
+  }
+
+  // =========================================================
+  // RENDER DETAILED STATS TAB
+  // =========================================================
+  function renderDetailedStats() {
+    const sorted = getSorted();
+    const el = document.getElementById('statsContent');
+    if (sorted.length === 0) {
+      el.innerHTML = '<div class="report-empty">No data yet. Add participants to see stats.</div>';
+      return;
+    }
+    const scores = sorted.map(p => p.score);
+    const n   = scores.length;
+    const max = scores[0];
+    const min = scores[n-1];
+    const avg = calcAvg();
+    const sum = scores.reduce((a,b) => a+b, 0);
+    const variance = scores.reduce((a,b) => a + Math.pow(b - avg, 2), 0) / n;
+    const std = Math.sqrt(variance).toFixed(2);
+    const median = n % 2 === 0 ? ((scores[n/2-1] + scores[n/2]) / 2).toFixed(1) : scores[Math.floor(n/2)];
+
+    function pct(val) { return max > 0 ? ((val/max)*100).toFixed(1) : 0; }
+
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;">
+        ${statItem('👥','Total','Participants', n)}
+        ${statItem('⬆️','Highest','Score', max.toLocaleString())}
+        ${statItem('⬇️','Lowest','Score', min.toLocaleString())}
+        ${statItem('📊','Average','Score', avg.toFixed(2))}
+        ${statItem('〰️','Median','Score', median)}
+        ${statItem('📐','Std Dev','Spread', std)}
+      </div>
+      <hr class="divider"/>
+      <div class="section-title" style="margin-bottom:1rem;">Score Distribution</div>
+      ${sorted.map(p => `
+        <div class="stats-bar-wrap">
+          <div class="stats-bar-label"><span>${escHtml(p.name)}</span><span>${p.score.toLocaleString()}</span></div>
+          <div class="stats-bar"><div class="stats-bar-fill" style="width:${pct(p.score)}%;background:var(--grad-hero)"></div></div>
+        </div>`).join('')}`;
+  }
+
+  function statItem(icon, label, sub, val) {
+    return `
+      <div class="stat-card" style="padding:1rem;">
+        <div class="stat-icon">${icon}</div>
+        <div class="stat-label">${label}</div>
+        <div class="stat-value" style="font-size:1.4rem;">${val}</div>
+        <div class="stat-sub">${sub}</div>
+      </div>`;
+  }
+
+  // =========================================================
+  // HELPER — get tier
+  // =========================================================
+  function getTier(score, avg) {
+    if (avg === 0) return { label: '—', cls: 'mid' };
+    if (score >= avg * 1.15) return { label: '🚀 Top',    cls: 'top' };
+    if (score > avg * 0.85)  return { label: '📊 Medium', cls: 'mid' };
+    return                          { label: '📉 Slow',   cls: 'low' };
+  }
+
+  function calcAvg() {
+    if (participants.length === 0) return 0;
+    return participants.reduce((s, p) => s + p.score, 0) / participants.length;
+  }
+
+  // =========================================================
+  // RENDER ALL
+  // =========================================================
+  function renderAll() {
+    renderStats();
+    renderTable();
+    renderPodium();
+    renderReport();
+    renderDetailedStats();
+  }
+
+  // =========================================================
+  // TABS
+  // =========================================================
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === name);
+      b.setAttribute('aria-selected', b.dataset.tab === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'tab-'+name);
+    });
+  }
+
+  // =========================================================
+  // THEME TOGGLE
+  // =========================================================
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  function toggleTheme() {
+    const curr = document.documentElement.getAttribute('data-theme');
+    applyTheme(curr === 'dark' ? 'light' : 'dark');
+  }
+
+  // =========================================================
+  // EXPORT CSV
+  // =========================================================
+  function exportCSV() {
+    const sorted = getSorted();
+    if (sorted.length === 0) { showToast('⚠ No data to export.', 'error'); return; }
+    const avg = calcAvg();
+    const rows = [['Rank','Name','Score','Tier','Percentile']];
+    sorted.forEach((p, i) => {
+      const tier = getTier(p.score, avg).label.replace(/[^a-zA-Z ]/g, '').trim();
+      const pct  = sorted.length > 1 ? (((sorted.length - 1 - i) / (sorted.length - 1)) * 100).toFixed(1) : '100.0';
+      rows.push([i+1, p.name, p.score, tier, pct+'%']);
+    });
+    const csv   = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob  = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href      = url;
+    a.download  = `Team26_Leaderboard_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('📤 CSV exported successfully!', 'success');
+  }
+
+  // =========================================================
+  // TOAST NOTIFICATION
+  // =========================================================
+  function showToast(msg, type = 'info') {
+    const wrap = document.getElementById('toastWrap');
+    const el   = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(() => {
+      el.style.animation = 'toastOut 0.25s ease forwards';
+      setTimeout(() => el.remove(), 260);
+    }, 2800);
+  }
+
+  // =========================================================
+  // ESCAPE HTML
+  // =========================================================
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Allow Enter key to submit form
+  ['inputName','inputScore'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') addParticipant();
+    });
+  });
+  ['editName','editScore'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveEdit();
+    });
+  });
+</script>
+</body>
+</html>
